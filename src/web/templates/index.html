@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Profile Chat</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand-mark" aria-hidden="true">P</div>
+      <div class="brand-copy">
+        <h1>Profile Chat</h1>
+        <p>Microsoft Foundry</p>
+      </div>
+      <div class="session-state">
+        <span class="connection-state"><span aria-hidden="true"></span>接続済み</span>
+        {% if signed_in_user %}
+        <span class="signed-in-user" title="{{ signed_in_user }}">{{ signed_in_user }}</span>
+        {% endif %}
+      </div>
+    </header>
+
+    <main class="chat-surface" aria-label="チャット">
+      <div id="messages" class="message-list" role="log" aria-live="polite" aria-relevant="additions">
+        <article class="message message-assistant">
+          <div class="message-label">Agent</div>
+          <p>プロフィールについて聞いてください。</p>
+        </article>
+      </div>
+
+      <form id="composer" class="composer">
+        <label class="sr-only" for="message-input">メッセージ</label>
+        <textarea id="message-input" name="message" rows="1" maxlength="2000" placeholder="メッセージを入力" required></textarea>
+        <button id="reset-button" class="icon-button" type="button" title="会話をリセット" aria-label="会話をリセット">↻</button>
+        <button id="send-button" class="send-button" type="submit">送信</button>
+      </form>
+    </main>
+  </div>
+</body>
+</html>

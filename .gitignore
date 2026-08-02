@@ -1,0 +1,53 @@
+# Azure Developer CLI environment state
+.azure/*
+!.azure/deployment-plan.md
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Azure Functions local state
+local.settings.json
+.python_packages/
+bin/
+obj/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+*.key
+*.cer
+
+# Diagnostics and browser artifacts
+_diagnostics/
+diagnostics/
+*.log
+*.trace
+*.har
+*.webm
+*.zip
+playwright-report/
+test-results/
+
+# Build outputs
+infra/*.json
+!infra/main.parameters.json
+dist/
+build/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

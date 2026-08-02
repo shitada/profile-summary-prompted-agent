@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "${AZURE_ENV_NAME}"
+    },
+    "resourceGroupName": {
+      "value": "${AZURE_RESOURCE_GROUP}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "webLocation": {
+      "value": "${WEB_LOCATION=${AZURE_LOCATION}}"
+    },
+    "principalId": {
+      "value": "${AZURE_PRINCIPAL_ID}"
+    },
+    "principalType": {
+      "value": "${AZURE_PRINCIPAL_TYPE=User}"
+    },
+    "foundryResourceAppId": {
+      "value": "${FOUNDRY_RESOURCE_APP_ID}"
+    },
+    "foundryDelegatedPermissionId": {
+      "value": "${FOUNDRY_DELEGATED_PERMISSION_ID}"
+    },
+    "serviceManagementReference": {
+      "value": "${SERVICE_MANAGEMENT_REFERENCE=}"
+    },
+    "foundryProjectName": {
+      "value": "${FOUNDRY_PROJECT_NAME=profile-summary}"
+    },
+    "foundryAgentName": {
+      "value": "${FOUNDRY_AGENT_NAME=profile-summary-agent}"
+    },
+    "foundryConnectionName": {
+      "value": "${FOUNDRY_CONNECTION_NAME=profile-mcp-oauth}"
+    },
+    "modelDeploymentName": {
+      "value": "${MODEL_DEPLOYMENT_NAME=gpt-5-mini}"
+    },
+    "modelName": {
+      "value": "${MODEL_NAME=gpt-5-mini}"
+    },
+    "modelVersion": {
+      "value": "${MODEL_VERSION=2025-08-07}"
+    },
+    "modelSkuName": {
+      "value": "${MODEL_SKU_NAME=GlobalStandard}"
+    },
+    "modelCapacity": {
+      "value": "${MODEL_CAPACITY=10}"
+    },
+    "webSkuName": {
+      "value": "${WEB_SKU_NAME=B1}"
+    },
+    "webSkuTier": {
+      "value": "${WEB_SKU_TIER=Basic}"
+    },
+    "webSkuCapacity": {
+      "value": "${WEB_SKU_CAPACITY=1}"
+    },
+    "webAlwaysOn": {
+      "value": "${WEB_ALWAYS_ON=true}"
+    }
+  }
+}

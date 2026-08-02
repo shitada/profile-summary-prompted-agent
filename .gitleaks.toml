@@ -1,0 +1,15 @@
+title = "Profile summary prompted agent Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Exclude generated local environments and caches"
+paths = [
+  '''(^|[\\/])\.venv([\\/]|$)''',
+  '''(^|[\\/])venv([\\/]|$)''',
+  '''(^|[\\/])__pycache__([\\/]|$)''',
+  '''(^|[\\/])\.pytest_cache([\\/]|$)''',
+  '''(^|[\\/])\.mypy_cache([\\/]|$)''',
+  '''(^|[\\/])\.ruff_cache([\\/]|$)'''
+]

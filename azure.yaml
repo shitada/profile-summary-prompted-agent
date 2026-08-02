@@ -1,0 +1,16 @@
+name: profile-summary-prompted-agent
+metadata:
+  template: profile-summary-prompted-agent@0.1.0
+infra:
+  provider: bicep
+  path: infra
+  module: main
+services:
+  api:
+    project: ./src/function
+    host: function
+    language: python
+  web:
+    project: ./src/web
+    host: appservice
+    language: python
