@@ -77,14 +77,16 @@ $flexLocations = Invoke-AzJson -Arguments @(
     '--only-show-errors', '--output', 'json'
 )
 $normalizedLocation = ($Location -replace '\s', '').ToLowerInvariant()
-$flexSupported = ($flexLocations | ConvertTo-Json -Depth 20 -Compress).ToLowerInvariant() -match [regex]::Escape($normalizedLocation)
+$normalizedFlexLocations = (($flexLocations | ConvertTo-Json -Depth 20 -Compress) -replace '\s', '').ToLowerInvariant()
+$flexSupported = $normalizedFlexLocations -match [regex]::Escape($normalizedLocation)
 
 $webLocations = Invoke-AzJson -Arguments @(
     'appservice', 'list-locations', '--sku', $WebSkuName, '--linux-workers-enabled',
     '--subscription', $SubscriptionId, '--only-show-errors', '--output', 'json'
 )
 $normalizedWebLocation = ($WebLocation -replace '\s', '').ToLowerInvariant()
-$webSupported = ($webLocations | ConvertTo-Json -Depth 20 -Compress).ToLowerInvariant() -match [regex]::Escape($normalizedWebLocation)
+$normalizedWebLocations = (($webLocations | ConvertTo-Json -Depth 20 -Compress) -replace '\s', '').ToLowerInvariant()
+$webSupported = $normalizedWebLocations -match [regex]::Escape($normalizedWebLocation)
 
 $webRuntimes = @(Invoke-AzJson -Arguments @(
     'webapp', 'list-runtimes', '--os', 'linux', '--subscription', $SubscriptionId,
@@ -145,7 +147,7 @@ $checks = [ordered]@{
 }
 $ready = @($checks.Values | Where-Object { -not $_ }).Count -eq 0
 
-if ($SetAzdEnvironment) {
+if ($SetAzdEnvironment -and $ready) {
     $values = [ordered]@{
         AZURE_SUBSCRIPTION_ID = $SubscriptionId
         AZURE_TENANT_ID = $TenantId
@@ -172,7 +174,7 @@ if ($SetAzdEnvironment) {
 [pscustomobject]@{
     Status = if ($ready) { 'ready' } else { 'blocked' }
     ReadOnlyAzure = $true
-    AzdEnvironmentUpdated = [bool]$SetAzdEnvironment
+    AzdEnvironmentUpdated = [bool]($SetAzdEnvironment -and $ready)
     Checks = $checks
     MissingProviders = @($providerStates | Where-Object { -not $_.Registered } | ForEach-Object Namespace)
     AvailableModelCapacity = $availableCapacity
