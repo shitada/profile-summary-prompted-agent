@@ -42,6 +42,7 @@ test-results/
 
 # Build outputs
 infra/*.json
+!infra/bicepconfig.json
 !infra/main.parameters.json
 dist/
 build/
