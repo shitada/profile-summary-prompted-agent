@@ -3,7 +3,7 @@
 App ServiceからMicrosoft Foundry Prompt AgentとAzure Functions MCPを通じてMicrosoft Graph `/me`を呼ぶ、ユーザー委任認証の再現可能なサンプルです。
 
 > [!IMPORTANT]
-> このリポジトリはprivate-firstで整備しています。Python testsとBicep compileを含むlocal validationは実施済みですが、public化前に別のclean Azure環境でgreenfield deployment、複数ユーザーE2E、cleanupを完了する必要があります。
+> このリポジトリはprivate-firstで整備しています。Python tests、Bicep compile、greenfield deployment、2ユーザーE2E、cleanupまで検証済みです。Public化には、最終成果物の人間レビューと権利・ライセンス承認が別途必要です。
 
 ## Architecture
 
@@ -122,8 +122,7 @@ azd provision
 azd deploy
 
 ./scripts/configure-oauth-connection.ps1 `
-  -ConfirmAzureWrite `
-  -UseDeviceAuthentication
+  -ConfirmAzureWrite
 
 ./scripts/create-prompt-agent.ps1 -ConfirmAzureWrite
 ./scripts/verify-deployment.ps1 `
@@ -140,6 +139,18 @@ azd deploy
 ```
 
 初回はFoundry MCP connectionとGraph `User.Read`の2つのユーザー同意が発生します。別ユーザーはfresh InPrivate browser contextで個別に検証してください。
+
+検証後はtenant-scope Entra objectsを含めてcleanupします。
+
+```powershell
+./scripts/cleanup-validation-environment.ps1 `
+  -ConfirmAzureWrite `
+  -EnvironmentName <environment-name> `
+  -SubscriptionId <subscription-id> `
+  -TenantId <tenant-id> `
+  -ResourceGroup <resource-group> `
+  -RemoveAzdEnvironment
+```
 
 ## Local Validation
 

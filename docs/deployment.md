@@ -120,9 +120,10 @@ azd deploy
 
 ```powershell
 ./scripts/configure-oauth-connection.ps1 `
-  -ConfirmAzureWrite `
-  -UseDeviceAuthentication
+  -ConfirmAzureWrite
 ```
+
+既定ではAzure CLIのWindows Authentication Manager (WAM) sessionからMicrosoft Graph tokenを取得し、process内だけでGraph PowerShellへ渡します。Managed-device Conditional Access環境ではdevice codeを使用しません。
 
 Scriptは次を確認してからwriteします。
 
@@ -191,23 +192,28 @@ E2E成功後に古いOAuth client credentialを削除します。
 
 ```powershell
 ./scripts/remove-stale-oauth-secrets.ps1 `
-  -ConfirmAzureWrite `
-  -UseDeviceAuthentication
+  -ConfirmAzureWrite
 ```
 
 常にactive credentialを1件以上残します。Function API applicationにはclient secretを作成しません。
 
 ## Cleanup
 
-Azure resourcesとtenant-scope Entra objectsは別に確認します。
+Azure resources、Prompt Agent、Foundry connection、tenant-scope Entra objectsは別のlifecycleを持ちます。検証値を失わないよう、`azd down`より前にcleanup scriptを実行します。
 
-1. Agent versionとFoundry connectionを削除する。
-2. `azd down --purge --force`でAzure resourcesを削除する。
-3. Web、Function API、MCP OAuth clientのapplication/service principalがtenantに残っていないか確認する。
-4. 残る場合はobject IDをazd outputsと照合してから管理者が削除する。
-5. 作業用azd environment、local browser context、temporary denylistを破棄する。
+```powershell
+./scripts/cleanup-validation-environment.ps1 `
+  -ConfirmAzureWrite `
+  -EnvironmentName <environment-name> `
+  -SubscriptionId <subscription-id> `
+  -TenantId <tenant-id> `
+  -ResourceGroup <resource-group> `
+  -RemoveAzdEnvironment
+```
 
-削除操作は対象subscription、tenant、resource group、application display nameとobject IDを人間が確認してから実行してください。
+ScriptはAgent、connection、Azure resource group、3 application/service principal pairsの順に削除し、削除後の不存在を確認します。`azd down`後にoutputsが消えている場合は、environment固有の3つのexact display nameが各1件に解決できる場合だけEntra objectsを復元して削除します。曖昧または部分的な状態では削除しません。
+
+残るInPrivate browser contextとtemporary denylistは別途破棄します。削除前に対象subscription、tenant、resource groupを確認してください。
 
 ## References
 

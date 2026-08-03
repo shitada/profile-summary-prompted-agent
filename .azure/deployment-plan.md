@@ -113,6 +113,19 @@ Validated on 2026-08-02 before provisioning:
 
 The primary and web regions are intentionally parameterized. The validation subscription had zero App Service worker quota in the primary region, so the preview used a separate web region with available B1 quota. No Azure resources were created during validation.
 
+Validated on 2026-08-03 through deployment and cleanup:
+
+- `azd provision` and `azd deploy`: passed for a clean dedicated resource group. The deployment used separate primary and Web regions because of regional App Service worker quota.
+- Storage policy exception: an environment-only `SecurityControl` tag enabled public deployment storage while shared-key access remained disabled. The deployment principal received Storage Blob Data Owner only on the deployment storage account.
+- OAuth and Agent setup: repository scripts created a separate OAuth client/API design, a per-user OAuth project connection, and Prompt Agent version 1 with only `get_my_profile` allowed.
+- Strict verifier: passed after deployment and again after credential cleanup. Function API secrets remained zero, the Function caller allowlist contained exactly two applications, one active short-lived OAuth credential remained, and the Agent definition matched the expected connection and tool allowlist.
+- End-to-end: first-use MCP consent, Graph delegated consent, successful `/me` profile summary, a non-interactive repeat call, and a separate fresh InPrivate user context all succeeded.
+- PII-safe telemetry: recorded two distinct hashed users and successful Web/Function events without retaining UPNs, object IDs, tokens, consent URLs, or profile payloads.
+- Cleanup: Prompt Agent and OAuth connection returned not found after deletion; `azd down --purge --force` removed and purged the dedicated Azure resources; six tenant-scope Entra application/service-principal objects were deleted and verified absent; the local azd environment and validation browser processes were removed.
+- GitHub CI: credential-free validation and Git-history secret scanning passed after tracking the Microsoft Graph Bicep extension configuration.
+
+No validation Azure or Entra resources remain. Public visibility and license publication remain blocked on final human, organizational, rights, and legal review.
+
 ## Deployment Approval
 
 This plan authorizes automated local validation, private GitHub repository creation and push, clean Azure deployment validation, end-to-end testing, and cleanup. Public visibility, license publication, and final release still require separate human approval.
