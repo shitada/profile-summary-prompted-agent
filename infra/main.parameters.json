@@ -64,6 +64,9 @@
     },
     "webAlwaysOn": {
       "value": "${WEB_ALWAYS_ON=true}"
+    },
+    "storageSecurityControlTagValue": {
+      "value": "${STORAGE_SECURITY_CONTROL_TAG_VALUE=}"
     }
   }
 }

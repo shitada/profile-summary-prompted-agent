@@ -72,6 +72,9 @@ param webSkuCapacity int = 1
 @description('Enable Always On for a paid App Service plan.')
 param webAlwaysOn bool = true
 
+@description('Optional subscription-specific SecurityControl tag value for the deployment storage account.')
+param storageSecurityControlTagValue string = ''
+
 var resourceToken = toLower(take(uniqueString(subscription().id, environmentName), 12))
 var tags = {
   'azd-env-name': environmentName
@@ -104,6 +107,7 @@ module core './core-resources.bicep' = {
     webSkuTier: webSkuTier
     webSkuCapacity: webSkuCapacity
     webAlwaysOn: webAlwaysOn
+    storageSecurityControlTagValue: storageSecurityControlTagValue
     tags: tags
   }
 }

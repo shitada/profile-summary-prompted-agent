@@ -51,6 +51,9 @@ param webSkuCapacity int = 1
 @description('Enable Always On for a paid App Service plan. Set false when testing with F1.')
 param webAlwaysOn bool = true
 
+@description('Optional subscription-specific SecurityControl tag value for the deployment storage account.')
+param storageSecurityControlTagValue string = ''
+
 param tags object = {}
 
 var functionAppName = 'func-profile-${resourceToken}'
@@ -95,7 +98,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   sku: {
     name: 'Standard_LRS'
   }
-  tags: tags
+  tags: union(tags, !empty(storageSecurityControlTagValue) ? {
+    SecurityControl: storageSecurityControlTagValue
+  } : {})
   properties: {
     accessTier: 'Hot'
     allowBlobPublicAccess: false
@@ -203,6 +208,16 @@ resource storageBlobDataOwner 'Microsoft.Authorization/roleAssignments@2022-04-0
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataOwnerRoleId)
     principalId: functionIdentity.properties.principalId
     principalType: 'ServicePrincipal'
+  }
+}
+
+resource deploymentPrincipalStorageBlobDataOwner 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
+  name: guid(storageAccount.id, principalId, storageBlobDataOwnerRoleId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataOwnerRoleId)
+    principalId: principalId
+    principalType: principalType
   }
 }
 

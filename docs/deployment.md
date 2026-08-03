@@ -51,6 +51,12 @@ azd env set WEB_ALWAYS_ON <true-or-false>
 
 F1を使用する場合はtierを`Free`、Always Onを`false`にします。F1はavailability、quota、SLA、cold startの制約があるため、既定値はB1です。
 
+Subscription policyがStorage public network accessに承認済みの例外tagを要求する場合だけ、policy ownerが指定した値を設定します。一般環境では未設定のままにします。
+
+```powershell
+azd env set STORAGE_SECURITY_CONTROL_TAG_VALUE <approved-value>
+```
+
 ## 2. Run Preflight
 
 ```powershell
