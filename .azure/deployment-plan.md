@@ -2,13 +2,12 @@
 
 ## Status
 
-Validated
+Public Release Approved
 
 ## Approval
 
 - 2026-08-02: Automated release gates, private GitHub repository creation and push, clean Azure validation, end-to-end testing, and cleanup are approved.
-- Final human review remains the last gate.
-- Public visibility and license publication are not approved by this plan.
+- 2026-08-03: Repository owner completed the final review and approved the MIT License and public visibility. Post-visibility security settings remain mandatory.
 
 ## Goal
 
@@ -126,8 +125,8 @@ Validated on 2026-08-03 through deployment and cleanup:
 - GitHub CI: credential-free validation and Git-history secret scanning passed after tracking the Microsoft Graph Bicep extension configuration.
 - Fresh-clone proof: a clean clone from private `main` passed strict validation, dependency audit, directory/history secret scans, and clean working-tree verification before the disposable clone was removed.
 
-No validation Azure or Entra resources remain. Public visibility and license publication remain blocked on final human, organizational, rights, and legal review.
+No validation Azure or Entra resources remain. The repository owner approved the final public-release candidate and MIT licensing.
 
 ## Deployment Approval
 
-This plan authorizes automated local validation, private GitHub repository creation and push, clean Azure deployment validation, end-to-end testing, and cleanup. Public visibility, license publication, and final release still require separate human approval.
+This plan authorizes the completed automated validation, deployment proof, cleanup, MIT publication, and public visibility change. Private vulnerability reporting and available branch protection must be configured after visibility changes.

@@ -3,7 +3,7 @@
 App ServiceからMicrosoft Foundry Prompt AgentとAzure Functions MCPを通じてMicrosoft Graph `/me`を呼ぶ、ユーザー委任認証の再現可能なサンプルです。
 
 > [!IMPORTANT]
-> このリポジトリはprivate-firstで整備しています。Python tests、Bicep compile、greenfield deployment、2ユーザーE2E、cleanupまで検証済みです。Public化には、最終成果物の人間レビューと権利・ライセンス承認が別途必要です。
+> このリポジトリはprivate-firstで整備し、Python tests、Bicep compile、greenfield deployment、2ユーザーE2E、cleanup、fresh-clone security scanまで検証済みです。
 
 ## Architecture
 
@@ -179,6 +179,10 @@ python -m venv .venv
 ## Scope and Limitations
 
 このsampleは開発・検証用です。public endpoints、App Service Easy Auth、short-lived OAuth client secretを使用し、private networkingやproduction SLAを提供しません。Teams、Azure Bot Service、Activity Protocolの実装は含みません。
+
+## License
+
+このプロジェクトは[MIT License](LICENSE)で提供します。
 
 ## Official References
 

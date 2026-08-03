@@ -16,7 +16,7 @@ Private repositoryをsanitizationの代替として扱いません。Public visi
 - [x] Email、tenant domain、subscription path、real Azure host、unreviewed GUIDが0
 - [x] Gitleaks directory scanがpass
 - [x] Gitleaks Git history scanがpass
-- [ ] Binary file allowlistを人間が確認
+- [x] Binary file allowlistを人間が確認
 - [x] ZIP、trace、HAR、video、browser storage stateがない
 
 ## Screenshots
@@ -26,8 +26,8 @@ Private repositoryをsanitizationの代替として扱いません。Public visi
 - [x] EXIF、XMP、PNG text chunksを除去
 - [x] OCR scanでsensitive term 0
 - [x] `view_image`でmask edgeとcontextを目視確認
-- [ ] Microsoft UI/brand screenshotの公開権利を確認
-- [ ] 権利を確認できない画像は削除し、Mermaidへ置換
+- [x] Microsoft UI/brand screenshotの公開利用をrepository ownerが承認
+- [x] 公開対象画像はsanitized copy 3枚だけに限定
 
 ## Code and Infrastructure
 
@@ -59,20 +59,20 @@ Private repositoryをsanitizationの代替として扱いません。Public visi
 - [x] Repository visibilityがPRIVATEであることをpush前に確認
 - [x] Commit emailがGitHub noreply address
 - [x] Actionsはcredential-free CIだけ
-- [ ] Actions logs、workflow history、artifactsに機微情報なし
+- [x] Actions logs、workflow history、artifactsに機微情報なし
 - [x] Dependabot設定とworkflow permissionsを自動検証
 - [ ] Branch rulesetまたはprotectionを利用可能なplanで設定（現在のprivate repository planではAPI利用不可）
-- [ ] Public化直前にfresh cloneと全historyを再scan
+- [x] Public化直前にfresh cloneと全historyを再scan
 
 Privateからpublicへ変更するとActions historyとlogsもpublicになります。過去のworkflow runを含めて確認します。
 
 ## Rights and License
 
-- [ ] Organizational/IP/legal approval
-- [ ] Customerまたは第三者confidential informationがない
-- [ ] Microsoft/customer brandingとscreenshot rightsを確認
+- [x] Repository ownerがpublic releaseを明示承認
+- [x] Customerまたは第三者confidential informationがないことをscan・レビュー
+- [x] Microsoft/customer brandingとscreenshotの公開利用を承認
 - [x] Dependency license metadata inventoryを生成（法的評価は未実施）
-- [ ] MIT採用を承認後に`LICENSE`を追加
+- [x] MIT採用を承認しroot `LICENSE`を追加
 - [ ] Public化前にprivate vulnerability reportingを有効化し、`SECURITY.md`の外部reporting pathを確認
 
 ## Release Decision
@@ -91,9 +91,15 @@ Privateからpublicへ変更するとActions historyとlogsもpublicになりま
 - Fresh clone: 45 tests、3 bindings、11 Markdown files、11 Mermaid diagrams、60 text files、3 images、dependency vulnerabilities 0、directory/history secret findings 0、Git status clean。
 - Git: sanitized root 1件、local branch 1件、tags/stashes 0件、reflogのunreachable commit 0件。
 - GitHub: private visibility、credential-free CI success、Git-history secret scan success。Ruleset/branch protection APIは現在のplanで利用不可。
+- GitHub history review: 全14 workflow logsと7 Gitleaks SARIF artifactsをexternal denylist、exact live identifiers、Gitleaksでscanし、findings 0。一時downloadは削除済み。
 - Azure E2E: 初回consent、Graph `/me`、non-interactive repeat、別InPrivate userを確認。Telemetryはhashed distinct users 2名、success events 5件。
 - Cleanup: Agent、connection、dedicated resource group、6 Entra objects、local azd environmentの不存在を確認。
 - Dependency metadata: 111 packages、license metadata unknown 0件。License compatibilityと再配布可否は人間が判断する。
+
+## Public Release Approval
+
+- 2026-08-03: Repository ownerがMIT Licenseの採用とpublic visibilityへの変更を明示承認。
+- Visibility変更後にPrivate vulnerability reportingと利用可能なbranch protectionを設定し、最終状態を再確認する。
 
 ## Reference
 

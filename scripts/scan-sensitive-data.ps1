@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 
 $excludedDirectories = @('.git', '.venv', 'venv', '__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache')
 $textExtensions = @('.py', '.ps1', '.md', '.bicep', '.json', '.yaml', '.yml', '.html', '.css', '.js', '.svg', '.txt')
-$textFileNames = @('.gitignore', '.gitattributes')
+$textFileNames = @('.gitignore', '.gitattributes', 'LICENSE')
 $publicGuidAllowlist = @(
     '00000003-0000-0000-c000-000000000000',
     'e1fe6dd8-ba31-4d61-89e7-88639da4683d',

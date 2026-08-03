@@ -4,8 +4,8 @@
 
 Security issueはpublic GitHub Issueへ投稿しないでください。
 
-- Private期間中: repository administratorは**Security > Advisories > New draft security advisory**を使用します。Collaboratorはrepository ownerへ既存の組織内private channelで連絡し、administratorにdraft advisoryの作成を依頼します。
-- Public化前: repository ownerはGitHubの**Private vulnerability reporting**を有効化し、外部reporterが**Security > Advisories > Report a vulnerability**からprivateに報告できることを確認します。
+- Repository administratorは**Security > Advisories > New draft security advisory**を使用します。
+- 外部reporterは**Security > Advisories > Report a vulnerability**からprivateに報告してください。GitHubのPrivate vulnerability reportingを使用します。
 
 Reportには、影響するcomponent、再現条件、safe correlation informationだけを共有してください。
 
@@ -21,7 +21,7 @@ Ownerは受領後、再現可否、影響範囲、修正方針、公開可否を
 
 ## Supported Versions
 
-このrepositoryはpublic release前のprivate sampleです。Current default branchだけをsecurity review対象とします。Production supportやSLAは提供しません。
+Current default branchだけをsecurity review対象とします。Production supportやSLAは提供しません。
 
 ## Security Boundaries
 
