@@ -33,6 +33,11 @@ param(
 
 . (Join-Path $PSScriptRoot 'common.ps1')
 
+function Write-VerificationStep {
+    param([Parameter(Mandatory)][string]$Name)
+    Write-Host "[Verify] $Name"
+}
+
 $SubscriptionId = Resolve-AzdValue -Value $SubscriptionId -Name 'AZURE_SUBSCRIPTION_ID'
 $ResourceGroup = Resolve-AzdValue -Value $ResourceGroup -Name 'AZURE_RESOURCE_GROUP'
 $FunctionAppName = Resolve-AzdValue -Value $FunctionAppName -Name 'SERVICE_API_NAME'
@@ -61,12 +66,13 @@ $McpServerUrl = Resolve-AzdValue -Value $McpServerUrl -Name 'MCP_SERVER_URL'
 $ConnectionName = Resolve-AzdValue -Value $ConnectionName -Name 'FOUNDRY_CONNECTION_NAME'
 $AgentName = Resolve-AzdValue -Value $AgentName -Name 'FOUNDRY_AGENT_NAME'
 
+Write-VerificationStep 'Azure application resources'
 $function = Invoke-AzJson -Arguments @(
     'functionapp', 'show', '--name', $FunctionAppName, '--resource-group', $ResourceGroup,
     '--subscription', $SubscriptionId, '--only-show-errors', '--output', 'json'
 )
 Assert-Condition ($function.kind -eq 'functionapp,linux') 'The Function App is not a Linux Function App.'
-Assert-Condition ($function.httpsOnly -eq $true) 'The Function App does not require HTTPS.'
+Assert-Condition ($function.properties.httpsOnly -eq $true) 'The Function App does not require HTTPS.'
 Assert-Condition (@($function.identity.userAssignedIdentities.PSObject.Properties.Name) -contains $FunctionIdentityResourceId) `
     'The expected user-assigned identity is not attached to the Function App.'
 
@@ -79,6 +85,7 @@ Assert-Condition ($web.httpsOnly -eq $true) 'The frontend does not require HTTPS
 Assert-Condition (@($web.identity.userAssignedIdentities.PSObject.Properties.Name) -contains $WebIdentityResourceId) `
     'The expected user-assigned identity is not attached to the frontend.'
 
+Write-VerificationStep 'Runtime application settings'
 $functionSettings = @(Invoke-AzJson -Arguments @(
     'functionapp', 'config', 'appsettings', 'list', '--name', $FunctionAppName,
     '--resource-group', $ResourceGroup, '--subscription', $SubscriptionId,
@@ -115,6 +122,7 @@ Assert-Condition ($webSettingMap.OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID -eq $Web
 Assert-Condition (-not $webSettingMap.ContainsKey('AZURE_CLIENT_SECRET')) `
     'The frontend contains an Azure client secret setting.'
 
+Write-VerificationStep 'Easy Auth policies'
 $functionAuthUrl = "https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup" +
     "/providers/Microsoft.Web/sites/$FunctionAppName/config/authsettingsV2`?api-version=2025-03-01"
 $functionAuth = (Invoke-AzJson -Arguments @(
@@ -150,6 +158,7 @@ Assert-Condition ($webAuth.globalValidation.unauthenticatedClientAction -eq 'Red
 Assert-Condition ($webAuth.identityProviders.azureActiveDirectory.registration.clientId -eq $WebAppApplicationId) `
     'Frontend Easy Auth uses an unexpected application registration.'
 
+Write-VerificationStep 'Microsoft Entra applications'
 $functionApiApp = Invoke-AzJson -Arguments @(
     'ad', 'app', 'show', '--id', $FunctionApiObjectId, '--only-show-errors', '--output', 'json'
 )
@@ -198,6 +207,7 @@ Assert-Condition (
 Assert-Condition (@($webAppRegistration.requiredResourceAccess).Count -eq 1) `
     'The Web application must request only one Foundry resource permission set.'
 
+Write-VerificationStep 'Federated credentials and secrets'
 $functionFics = @(Invoke-AzJson -Arguments @(
     'ad', 'app', 'federated-credential', 'list', '--id', $FunctionApiObjectId,
     '--only-show-errors', '--output', 'json'
@@ -224,6 +234,7 @@ $activeOAuthSecrets = @($oauthClientApp.passwordCredentials | Where-Object {
 Assert-Condition ($activeOAuthSecrets.Count -ge 1) 'The dedicated OAuth client has no active credential.'
 Assert-Condition (@($webAppRegistration.passwordCredentials).Count -eq 0) 'The Web application contains a client secret.'
 
+Write-VerificationStep 'Microsoft Foundry resources and connection'
 $foundry = Invoke-AzJson -Arguments @(
     'cognitiveservices', 'account', 'show', '--name', $FoundryAccountName,
     '--resource-group', $ResourceGroup, '--subscription', $SubscriptionId,
@@ -258,6 +269,7 @@ Assert-Condition (@($oauthClientApp.web.redirectUris) -contains $connection.prop
 
 $agentVerified = $false
 if ($RequireAgent) {
+    Write-VerificationStep 'Prompt Agent definition'
     $token = & az account get-access-token --subscription $SubscriptionId `
         --scope 'https://ai.azure.com/.default' --query accessToken --output tsv --only-show-errors
     if ([string]::IsNullOrWhiteSpace($token)) {
@@ -277,9 +289,20 @@ if ($RequireAgent) {
 
     $definitions = @()
     foreach ($container in @($agent, $versions)) {
-        if ($container.definition) { $definitions += $container.definition }
-        foreach ($item in @($container.value)) {
-            if ($item.definition) { $definitions += $item.definition }
+        if ($container.PSObject.Properties['definition']) {
+            $definitions += $container.definition
+        }
+        $items = @()
+        if ($container.PSObject.Properties['value']) {
+            $items += @($container.value)
+        }
+        if ($container.PSObject.Properties['data']) {
+            $items += @($container.data)
+        }
+        foreach ($item in $items) {
+            if ($item.PSObject.Properties['definition']) {
+                $definitions += $item.definition
+            }
         }
     }
     $definition = $definitions | Where-Object kind -eq 'prompt' | Select-Object -First 1
@@ -289,10 +312,21 @@ if ($RequireAgent) {
     }) | Select-Object -First 1
     Assert-Condition ($null -ne $mcpTool) 'The Prompt Agent does not reference the expected MCP connection.'
     Assert-Condition ($mcpTool.server_url -eq $McpServerUrl) 'The Prompt Agent MCP URL is incorrect.'
-    Assert-Condition (@($mcpTool.allowed_tools) -contains 'get_my_profile') `
+    $allowedToolNames = @()
+    foreach ($allowedTool in @($mcpTool.allowed_tools)) {
+        if ($allowedTool -is [string]) {
+            $allowedToolNames += $allowedTool
+        }
+        elseif ($allowedTool.PSObject.Properties['tool_names']) {
+            $allowedToolNames += @($allowedTool.tool_names)
+        }
+    }
+    Assert-Condition ($allowedToolNames -contains 'get_my_profile') `
         'The Prompt Agent does not allow get_my_profile.'
     $agentVerified = $true
 }
+
+Write-VerificationStep 'Completed'
 
 [pscustomobject]@{
     Status = 'passed'

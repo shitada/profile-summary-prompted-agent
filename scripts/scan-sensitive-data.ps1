@@ -53,7 +53,9 @@ $syntheticGuidPattern = '^00000000-0000-4000-8000-00000000000[1-3]$'
 $files = Get-ChildItem -LiteralPath $RootPath -File -Recurse -Force | Where-Object {
     $relative = $_.FullName.Substring($RootPath.Length).TrimStart('\', '/')
     $segments = $relative -split '[\\/]'
+    $isAzdLocalState = $segments[0] -eq '.azure' -and $relative -notmatch '^\.azure[\\/]deployment-plan\.md$'
     -not ($segments | Where-Object { $excludedDirectories -contains $_ }) -and
+    -not $isAzdLocalState -and
     (($textExtensions -contains $_.Extension.ToLowerInvariant()) -or ($textFileNames -contains $_.Name))
 }
 

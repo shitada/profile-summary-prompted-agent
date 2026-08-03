@@ -14,14 +14,7 @@ Assert-ExplicitAzureWrite -Confirmed $ConfirmAzureWrite -Operation 'OAuth client
 $OAuthClientAppObjectId = Resolve-AzdValue -Value $OAuthClientAppObjectId -Name 'MCP_OAUTH_CLIENT_APPLICATION_OBJECT_ID'
 $TenantId = Resolve-AzdValue -Value $TenantId -Name 'AZURE_TENANT_ID'
 
-Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
-if (-not (Get-MgContext)) {
-    if (-not $UseDeviceAuthentication) {
-        throw 'No process-scoped Microsoft Graph session exists. Re-run with -UseDeviceAuthentication.'
-    }
-    Connect-MgGraph -TenantId $TenantId -Scopes 'Application.ReadWrite.All' `
-        -ContextScope Process -UseDeviceAuthentication -NoWelcome
-}
+Connect-MicrosoftGraphSession -TenantId $TenantId -UseDeviceAuthentication:$UseDeviceAuthentication
 $context = Get-MgContext
 Assert-Condition ($null -ne $context -and $context.TenantId -eq $TenantId) `
     'Microsoft Graph is not connected to the expected tenant.'

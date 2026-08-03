@@ -39,7 +39,7 @@ $TenantId = $account.tenantId
 
 if ([string]::IsNullOrWhiteSpace($PrincipalId)) {
     if ($PrincipalType -eq 'User') {
-        $PrincipalId = (& az ad signed-in-user show --query id --output tsv --only-show-errors 2>$null).Trim()
+        $PrincipalId = Resolve-AzureCliPrincipalId -SubscriptionId $SubscriptionId -TenantId $TenantId
     }
     if ([string]::IsNullOrWhiteSpace($PrincipalId)) {
         throw 'Pass -PrincipalId when the signed-in Azure CLI identity is not a user.'

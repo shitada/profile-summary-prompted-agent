@@ -34,14 +34,7 @@ $McpServerUrl = Resolve-AzdValue -Value $McpServerUrl -Name 'MCP_SERVER_URL'
 $TenantId = Resolve-AzdValue -Value $TenantId -Name 'AZURE_TENANT_ID'
 $ConnectionName = Resolve-AzdValue -Value $ConnectionName -Name 'FOUNDRY_CONNECTION_NAME'
 
-Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
-if (-not (Get-MgContext)) {
-    if (-not $UseDeviceAuthentication) {
-        throw 'No process-scoped Microsoft Graph session exists. Re-run with -UseDeviceAuthentication.'
-    }
-    Connect-MgGraph -TenantId $TenantId -Scopes 'Application.ReadWrite.All' `
-        -ContextScope Process -UseDeviceAuthentication -NoWelcome
-}
+Connect-MicrosoftGraphSession -TenantId $TenantId -UseDeviceAuthentication:$UseDeviceAuthentication
 $graphContext = Get-MgContext
 Assert-Condition ($null -ne $graphContext) 'Microsoft Graph authentication did not complete.'
 Assert-Condition ($graphContext.TenantId -eq $TenantId) 'Microsoft Graph is connected to a different tenant.'
@@ -97,7 +90,11 @@ catch {
 }
 
 $redirectUris = @($oauthClient.web.redirectUris)
-if ($connectionBefore.properties.redirectUrl -and $redirectUris -notcontains $connectionBefore.properties.redirectUrl) {
+if (
+    $null -ne $connectionBefore -and
+    $connectionBefore.properties.redirectUrl -and
+    $redirectUris -notcontains $connectionBefore.properties.redirectUrl
+) {
     $redirectUris += $connectionBefore.properties.redirectUrl
     $patchBody = @{ web = @{ redirectUris = $redirectUris } } | ConvertTo-Json -Depth 4
     Invoke-MgGraphRequest -Method Patch -Uri $oauthClientAppUri -Body $patchBody `
