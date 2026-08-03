@@ -8,7 +8,7 @@ Private repositoryをsanitizationの代替として扱いません。Public visi
 - [x] Original Git historyをimportしていない
 - [x] Repository historyがsanitized initial commitから開始
 - [x] Branches、tags、stashes、reflogへ削除前の機微情報がない
-- [ ] Fresh cloneで同じscan結果になる
+- [x] Fresh cloneで同じscan結果になる
 
 ## Text and Binary Scan
 
@@ -73,7 +73,7 @@ Privateからpublicへ変更するとActions historyとlogsもpublicになりま
 - [ ] Microsoft/customer brandingとscreenshot rightsを確認
 - [x] Dependency license metadata inventoryを生成（法的評価は未実施）
 - [ ] MIT採用を承認後に`LICENSE`を追加
-- [ ] `SECURITY.md`のreporting pathが有効
+- [ ] Public化前にprivate vulnerability reportingを有効化し、`SECURITY.md`の外部reporting pathを確認
 
 ## Release Decision
 
@@ -88,6 +88,7 @@ Privateからpublicへ変更するとActions historyとlogsもpublicになりま
 ## Automated Evidence
 
 - Local strict validation: 45 tests、2 Function bindings、11 Markdown files、11 Mermaid diagrams、59 text files、10 external denylist terms、3 OCR-scanned images。
+- Fresh clone: 45 tests、3 bindings、11 Markdown files、11 Mermaid diagrams、60 text files、3 images、dependency vulnerabilities 0、directory/history secret findings 0、Git status clean。
 - Git: sanitized root 1件、local branch 1件、tags/stashes 0件、reflogのunreachable commit 0件。
 - GitHub: private visibility、credential-free CI success、Git-history secret scan success。Ruleset/branch protection APIは現在のplanで利用不可。
 - Azure E2E: 初回consent、Graph `/me`、non-interactive repeat、別InPrivate userを確認。Telemetryはhashed distinct users 2名、success events 5件。

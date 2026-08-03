@@ -114,9 +114,12 @@ function Resolve-GraphObjects {
     $outputValues = @($outputNames | ForEach-Object { Resolve-OptionalAzdValue -Name $_ })
     $availableOutputCount = @($outputValues | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count
     if ($availableOutputCount -eq $outputNames.Count) {
-        return @(for ($index = 0; $index -lt $outputNames.Count; $index++) {
-            @{ Type = $outputTypes[$index]; Id = $outputValues[$index] }
-        })
+        return [pscustomobject]@{
+            Objects = @(for ($index = 0; $index -lt $outputNames.Count; $index++) {
+                @{ Type = $outputTypes[$index]; Id = $outputValues[$index] }
+            })
+            AlreadyAbsent = 0
+        }
     }
     Assert-Condition ($availableOutputCount -eq 0) `
         'Only part of the Microsoft Entra cleanup identifiers remain; cleanup was not attempted.'
@@ -126,32 +129,56 @@ function Resolve-GraphObjects {
         "Profile Chat ($EnvironmentName)"
         "Profile Foundry MCP OAuth client ($EnvironmentName)"
     )
-    $applications = @()
-    $servicePrincipals = @()
+    $objects = @()
+    $alreadyAbsent = 0
     foreach ($displayName in $displayNames) {
         $filter = [Uri]::EscapeDataString("displayName eq '$displayName'")
         $response = Invoke-MgGraphRequest -Method Get `
             -Uri "https://graph.microsoft.com/v1.0/applications?`$filter=$filter&`$select=id,appId"
         $matches = @($response.value)
-        Assert-Condition ($matches.Count -eq 1) `
-            'An environment-specific Microsoft Entra application was not resolved uniquely.'
-        $applications += @{ Type = 'applications'; Id = $matches[0].id }
-
-        $appIdFilter = [Uri]::EscapeDataString("appId eq '$($matches[0].appId)'")
+        Assert-Condition ($matches.Count -le 1) `
+            'An environment-specific Microsoft Entra application resolved ambiguously.'
+        if ($matches.Count -eq 1) {
+            $objects += @{ Type = 'applications'; Id = $matches[0].id }
+            $spFilter = [Uri]::EscapeDataString("appId eq '$($matches[0].appId)'")
+        }
+        else {
+            $alreadyAbsent++
+            $spFilter = [Uri]::EscapeDataString("displayName eq '$displayName'")
+        }
         $spResponse = Invoke-MgGraphRequest -Method Get `
-            -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=$appIdFilter&`$select=id"
+            -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=$spFilter&`$select=id"
         $spMatches = @($spResponse.value)
-        Assert-Condition ($spMatches.Count -eq 1) `
-            'An environment-specific Microsoft Entra service principal was not resolved uniquely.'
-        $servicePrincipals += @{ Type = 'servicePrincipals'; Id = $spMatches[0].id }
+        Assert-Condition ($spMatches.Count -le 1) `
+            'An environment-specific Microsoft Entra service principal resolved ambiguously.'
+        if ($spMatches.Count -eq 1) {
+            $objects += @{ Type = 'servicePrincipals'; Id = $spMatches[0].id }
+        }
+        else {
+            $alreadyAbsent++
+        }
     }
-    return @($servicePrincipals + $applications)
+    return [pscustomobject]@{
+        Objects = $objects
+        AlreadyAbsent = $alreadyAbsent
+    }
 }
 
 $resourceGroupExists = (& az group exists --name $ResourceGroup --subscription $SubscriptionId) -eq 'true'
 $agentDeleted = $false
 $connectionDeleted = $false
 $resourceGroupDeleted = -not $resourceGroupExists
+
+Connect-MicrosoftGraphSession -TenantId $TenantId
+try {
+    $graphResolution = Resolve-GraphObjects
+    $graphObjects = @($graphResolution.Objects)
+    $graphAlreadyAbsent = [int]$graphResolution.AlreadyAbsent
+}
+catch {
+    Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
+    throw
+}
 
 if ($resourceGroupExists) {
     $ProjectEndpoint = Resolve-AzdValue -Value '' -Name 'AZURE_AI_PROJECT_ENDPOINT'
@@ -182,10 +209,7 @@ if ($resourceGroupExists) {
     Assert-Condition $resourceGroupDeleted 'The validation resource group still exists after azd down.'
 }
 
-Connect-MicrosoftGraphSession -TenantId $TenantId
-$graphObjects = Resolve-GraphObjects
 $graphDeleted = 0
-$graphAlreadyAbsent = 0
 try {
     foreach ($graphObject in $graphObjects) {
         if (Remove-GraphObject -Type $graphObject.Type -Id $graphObject.Id) {
@@ -201,12 +225,25 @@ finally {
 }
 
 $environmentRemoved = $false
+$environmentAlreadyAbsent = $false
 if ($RemoveAzdEnvironment) {
-    & azd env remove $EnvironmentName --force --no-prompt
+    $environmentListOutput = & azd env list --output json 2>$null
     if ($LASTEXITCODE -ne 0) {
-        throw 'The local azd environment could not be removed.'
+        throw 'The local azd environment list could not be read.'
     }
-    $environmentRemoved = $true
+    $environments = @((($environmentListOutput -join [Environment]::NewLine) | ConvertFrom-Json))
+    $matchingEnvironments = @($environments | Where-Object Name -eq $EnvironmentName)
+    Assert-Condition ($matchingEnvironments.Count -le 1) 'The local azd environment resolved ambiguously.'
+    if ($matchingEnvironments.Count -eq 1) {
+        & azd env remove $EnvironmentName --force --no-prompt
+        if ($LASTEXITCODE -ne 0) {
+            throw 'The local azd environment could not be removed.'
+        }
+        $environmentRemoved = $true
+    }
+    else {
+        $environmentAlreadyAbsent = $true
+    }
 }
 
 [pscustomobject]@{
@@ -217,5 +254,6 @@ if ($RemoveAzdEnvironment) {
     GraphObjectsDeleted = $graphDeleted
     GraphObjectsAlreadyAbsent = $graphAlreadyAbsent
     AzdEnvironmentRemoved = $environmentRemoved
+    AzdEnvironmentAlreadyAbsent = $environmentAlreadyAbsent
     IdentifiersPrinted = $false
 } | ConvertTo-Json -Compress

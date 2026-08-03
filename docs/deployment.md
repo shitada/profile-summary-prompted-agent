@@ -213,6 +213,8 @@ Azure resources、Prompt Agent、Foundry connection、tenant-scope Entra objects
 
 ScriptはAgent、connection、Azure resource group、3 application/service principal pairsの順に削除し、削除後の不存在を確認します。`azd down`後にoutputsが消えている場合は、environment固有の3つのexact display nameが各1件に解決できる場合だけEntra objectsを復元して削除します。曖昧または部分的な状態では削除しません。
 
+同じcleanupを再実行しても、resource group、6 Entra objects、local azd environmentがすべて不存在ならwriteを行わず成功します。
+
 残るInPrivate browser contextとtemporary denylistは別途破棄します。削除前に対象subscription、tenant、resource groupを確認してください。
 
 ## References

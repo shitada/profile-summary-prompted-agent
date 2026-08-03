@@ -122,7 +122,9 @@ Validated on 2026-08-03 through deployment and cleanup:
 - End-to-end: first-use MCP consent, Graph delegated consent, successful `/me` profile summary, a non-interactive repeat call, and a separate fresh InPrivate user context all succeeded.
 - PII-safe telemetry: recorded two distinct hashed users and successful Web/Function events without retaining UPNs, object IDs, tokens, consent URLs, or profile payloads.
 - Cleanup: Prompt Agent and OAuth connection returned not found after deletion; `azd down --purge --force` removed and purged the dedicated Azure resources; six tenant-scope Entra application/service-principal objects were deleted and verified absent; the local azd environment and validation browser processes were removed.
+- Cleanup idempotency: a second run performed no deletes and reported the resource group, all six Entra objects, and local azd environment already absent.
 - GitHub CI: credential-free validation and Git-history secret scanning passed after tracking the Microsoft Graph Bicep extension configuration.
+- Fresh-clone proof: a clean clone from private `main` passed strict validation, dependency audit, directory/history secret scans, and clean working-tree verification before the disposable clone was removed.
 
 No validation Azure or Entra resources remain. Public visibility and license publication remain blocked on final human, organizational, rights, and legal review.
 
