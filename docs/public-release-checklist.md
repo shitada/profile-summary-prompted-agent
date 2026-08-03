@@ -61,7 +61,7 @@ Private repositoryをsanitizationの代替として扱いません。Public visi
 - [x] Actionsはcredential-free CIだけ
 - [x] Actions logs、workflow history、artifactsに機微情報なし
 - [x] Dependabot設定とworkflow permissionsを自動検証
-- [ ] Branch rulesetまたはprotectionを利用可能なplanで設定（現在のprivate repository planではAPI利用不可）
+- [x] Public化後にmain branch protectionを設定（CI 2 checks、1 approval、conversation resolution、force-push/delete禁止）
 - [x] Public化直前にfresh cloneと全historyを再scan
 
 Privateからpublicへ変更するとActions historyとlogsもpublicになります。過去のworkflow runを含めて確認します。
@@ -73,7 +73,7 @@ Privateからpublicへ変更するとActions historyとlogsもpublicになりま
 - [x] Microsoft/customer brandingとscreenshotの公開利用を承認
 - [x] Dependency license metadata inventoryを生成（法的評価は未実施）
 - [x] MIT採用を承認しroot `LICENSE`を追加
-- [ ] Public化前にprivate vulnerability reportingを有効化し、`SECURITY.md`の外部reporting pathを確認
+- [x] Public化直後にPrivate vulnerability reportingを有効化し、`SECURITY.md`の外部reporting pathを確認
 
 ## Release Decision
 
@@ -99,7 +99,7 @@ Privateからpublicへ変更するとActions historyとlogsもpublicになりま
 ## Public Release Approval
 
 - 2026-08-03: Repository ownerがMIT Licenseの採用とpublic visibilityへの変更を明示承認。
-- Visibility変更後にPrivate vulnerability reportingと利用可能なbranch protectionを設定し、最終状態を再確認する。
+- 2026-08-03: GitHub APIでpublic visibility、MIT detection、Private vulnerability reporting、main branch protectionを確認。
 
 ## Reference
 
