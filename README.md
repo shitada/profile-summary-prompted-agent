@@ -173,7 +173,7 @@ python -m venv .venv
 - [Security and privacy](docs/security-and-privacy.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Foundry RBAC](docs/foundry-rbac.md)
-- [Teams considerations](docs/teams-considerations.md)
+- [Teams new-user authentication flow](docs/teams-new-user-authentication-flow.md)
 - [Public release checklist](docs/public-release-checklist.md)
 
 ## Scope and Limitations
